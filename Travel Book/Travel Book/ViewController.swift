@@ -8,6 +8,7 @@
 import UIKit
 import MapKit
 import CoreLocation
+import CoreData
 
 class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate {
     @IBOutlet weak var mapView: MKMapView!
@@ -16,6 +17,9 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
     
     @IBOutlet weak var commentText: UITextField!
     var locationManager = CLLocationManager()
+    
+    var chosenLatitude = Double()
+    var chosenLongitude = Double()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +39,8 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         if gestureRecognizer.state == .began {
             let touchedPoint = gestureRecognizer.location(in: self.mapView)
             let touchedCoordinates = mapView.convert(touchedPoint, toCoordinateFrom: self.mapView)
+            chosenLatitude = touchedCoordinates.latitude
+            chosenLongitude = touchedCoordinates.longitude
             
             let annotation = MKPointAnnotation()
             annotation.coordinate = touchedCoordinates
@@ -52,6 +58,29 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         let span = MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
         let region = MKCoordinateRegion(center: location, span: span)
         mapView.setRegion(region, animated: true)
+    }
+    
+    
+    @IBAction func saveClicked(_ sender: Any) {
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let context = appDelegate.persistentContainer.viewContext
+        
+        let newPlace = NSEntityDescription.insertNewObject(forEntityName: "Places", into: context)
+        newPlace.setValue(nameText.text, forKey: "title")
+        newPlace.setValue(commentText.text, forKey: "subtitle")
+        newPlace.setValue(chosenLatitude, forKey: "latitude")
+        newPlace.setValue(chosenLongitude, forKey: "longitude")
+        newPlace.setValue(UUID(), forKey: "id")
+        
+        
+        do {
+            try context.save()
+            print("success")
+        } catch  {
+            print("error")
+        }
+        
     }
 }
 
