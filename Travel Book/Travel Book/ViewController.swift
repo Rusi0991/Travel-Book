@@ -155,6 +155,8 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
             // baloncukla birlikte extra bilgi gostere bilecek bir yer
             pinView?.canShowCallout = true
             pinView?.tintColor = UIColor.blue
+            
+            // detail disclousure button
             let button = UIButton(type: UIButton.ButtonType.detailDisclosure)
             pinView?.rightCalloutAccessoryView = button
         } else{
@@ -162,7 +164,30 @@ class ViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDele
         }
         return pinView
     }
-    
+    // yukaridaki detail disclousure buttonunu tiklimak icin
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        if selectedTitle != ""{
+            
+            var requestedLocation = CLLocation(latitude: annotationLatitude, longitude: annotationLongitude)
+            // koordinatlar ve secilen yer arasinda baglanti kurmaya olanak sagliyor(CLGeocoder)
+            CLGeocoder().reverseGeocodeLocation(requestedLocation){(placemarks, error) in
+                if let placemark = placemarks {
+                    if placemark.count > 0{
+                        //navigasyona sahin=b olmak icin MKPlacemark
+                        let newPlacemark = MKPlacemark(placemark: placemark[0])
+                        let item = MKMapItem(placemark: newPlacemark)
+                        item.name = self.annotationTitle
+                        let launchOptions = [MKLaunchOptionsDirectionsModeKey : MKLaunchOptionsDirectionsModeDriving]
+                        //navigasyonu acmak icin
+                        item.openInMaps(launchOptions: launchOptions)
+                    }
+                }
+            }
+                
+            }
+           
+        }
+ 
     
     @IBAction func saveClicked(_ sender: Any) {
         
@@ -202,3 +227,4 @@ extension UIViewController {
         view.endEditing(true)
     }
 }
+
